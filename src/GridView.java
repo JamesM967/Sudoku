@@ -25,41 +25,41 @@ public class GridView {
 	/**
 	 * Default setup
 	 */
-	public GridView() {
+	public GridView(int difficulty) {
 		myHeight = 400;
 		myWidth = 400;
-		initialize();
+		initialize(difficulty);
 	}
 	
-	public GridView(int height, int width) {
+	public GridView(int height, int width, int difficulty) {
 		myHeight = height;
 		myWidth = width;
-		initialize();
+		initialize(difficulty);
 	}
 
-	public GridView(int height, int width, Scene scene) {
+	public GridView(int height, int width, Scene scene, int difficulty) {
 		myHeight = height;
 		myWidth = width;
-		initialize(scene);
+		initialize(scene, difficulty);
 	}
 	
     /**
      * initializes the necessary components to create a TabPane with at least one instance of UI
      */
-    private void initialize () {
+    private void initialize (int difficulty) {
         myView = new BorderPane();
         myGridDimension = 3;
-        myGrid = new Grid(myGridDimension*myGridDimension);
+        myGrid = new Grid(myGridDimension*myGridDimension, difficulty);
         myTilepane = createGrid(myGridDimension);
         myGroup = new Group(myTilepane);
         myView.setCenter(myGroup);
         myScene = new Scene(myView, myWidth, myHeight);
     }
 
-    private void initialize (Scene scene) {  
+    private void initialize (Scene scene, int difficulty) {  
     	myView = new BorderPane();
         myGridDimension = 3;
-        myGrid = new Grid(myGridDimension*myGridDimension);
+        myGrid = new Grid(myGridDimension*myGridDimension, difficulty);
         myTilepane = createGrid(myGridDimension);
         myGroup = new Group(myTilepane);
         myView.setCenter(myGroup);

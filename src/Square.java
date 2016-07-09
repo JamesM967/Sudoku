@@ -2,6 +2,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 
 public class Square extends Rectangle {
 	
@@ -64,6 +65,9 @@ public class Square extends Rectangle {
 		this.setFill(Color.web("#ffe580")); //light yellowish color
 		isSelected = true;
 		StackPane stack = (StackPane) this.getParent();
+		if (stack.getChildren().size() == 2) {
+			stack.getChildren().add(1, new Text());
+		}
 		StackPane clickStack = (StackPane) stack.getChildren().get(2);
 		clickStack.requestFocus();
 	}

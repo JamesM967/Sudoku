@@ -11,9 +11,9 @@ public class HoleDigger {
 	private int[][][] myRowColCounts;
 	private List<int[]> myRandomCells;
 	
-	public HoleDigger(int dimension) {
+	public HoleDigger(int dimension, int difficulty) {
 		myNums = 81;
-		myNumsFinal = 40;
+		myNumsFinal = setDifficulty(difficulty);
 		myDimension = dimension;
 		myRowColCounts = createCountsArray();
 	}
@@ -182,5 +182,19 @@ public class HoleDigger {
 				myRandomCells2.add(cellTemp);
 			}
 		}
+	}
+	
+	private int setDifficulty(int difficulty) {
+		int numsLeft;
+		if (difficulty == 0) {
+			numsLeft = 60;
+		}
+		else if (difficulty == 1) {
+			numsLeft = 50;
+		}
+		else {
+			numsLeft = 40;
+		}
+		return numsLeft;
 	}
 }

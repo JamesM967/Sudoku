@@ -8,6 +8,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 
@@ -20,12 +21,12 @@ public class Grid {
 	private int[][] myPuzzle;
 	private int[][] mySet;
 	
-	public Grid(int dimension) {
+	public Grid(int dimension, int difficulty) {
 		myDimension = dimension;
 		mySquares = new Square[dimension][dimension];
 		mySelected = new ArrayList<Square>(); 
 		mySolution = generateCorrectGrid();
-		myPuzzle = generatePuzzle();
+		myPuzzle = generatePuzzle(difficulty);
 		int test = 1;
 	}
 	
@@ -46,15 +47,16 @@ public class Grid {
 				Text textNumber = new Text(strNumber);
 				textNumber.setFont(Font.font("Times New Roman", 22));
 				if (square.getIsSetInStone()) {
+					textNumber.setFont(Font.font("Times New Roman", FontWeight.BOLD, 22));
 					stack.getChildren().add(textNumber);
 				}
 			}
 		}
 	}
 	
-	private int[][] generatePuzzle() {
+	private int[][] generatePuzzle(int difficulty) {
 		int[][] puzzle = new int[myDimension][myDimension];
-		HoleDigger digger = new HoleDigger(myDimension);
+		HoleDigger digger = new HoleDigger(myDimension, difficulty);
 		puzzle = digger.dig(mySolution);
 		return puzzle;
 	}
