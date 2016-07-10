@@ -1,11 +1,14 @@
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 
@@ -15,7 +18,6 @@ public class ChooseGameScreen {
 	private int myWidth;
 	private BorderPane myBP;
 	private Group myGroup;
-	private VBox myButtonBox;
 	private Scene myScene;
 	private Stage mainStage;
 	
@@ -29,28 +31,36 @@ public class ChooseGameScreen {
 	private void initialize() {
 		myBP = new BorderPane();
 		myGroup = new Group();
-		myButtonBox = new VBox();
-		myGroup.getChildren().add(myButtonBox);
-		addRegularButton(myGroup, 0);
-		addRegularButton(myGroup, 1);
-		addRegularButton(myGroup, 2);
+		VBox titleBox = new VBox();
+		titleBox.setAlignment(Pos.CENTER);
+		Text title = makeTitle();
+		titleBox.getChildren().add(title);
+		myBP.setTop(titleBox);
+		VBox buttonBox = createButtonBox();
+		myGroup.getChildren().add(buttonBox);
 		myBP.setCenter(myGroup);
 		myScene = new Scene(myBP, myWidth, myHeight);
 	}
 	
-	private void addRegularButton(Group group, int difficulty) {
-		Button regular;
-		if (difficulty == 0) {
-			regular = new Button("Easy");
-		}
-		else if (difficulty == 1) {
-			regular = new Button("Medium");
-		}
-		else {
-			regular = new Button("Hard");
-		}
-		myButtonBox.getChildren().add(regular);
-		regular.setOnAction(new EventHandler<ActionEvent>() {
+	private VBox createButtonBox() {
+		VBox buttonBox = new VBox(12);
+		buttonBox.setAlignment(Pos.CENTER);
+		addDifficultyButton(buttonBox, 0);
+		addDifficultyButton(buttonBox, 1);
+		addDifficultyButton(buttonBox, 2);
+		return buttonBox;
+	}
+
+	private Text makeTitle() {
+		Text title = new Text("SUDOKU");
+		title.setFont(Font.font("Times New Roman", 100));
+		return title;
+	}
+
+	private void addDifficultyButton(VBox buttonBox, int difficulty) {
+		Button difficultyButton = createDifficultyButton(difficulty);
+		buttonBox.getChildren().add(difficultyButton);
+		difficultyButton.setOnAction(new EventHandler<ActionEvent>() {
 		    @Override public void handle(ActionEvent e) {
 		    	GridView gv = new GridView(myHeight, myWidth, difficulty);
 		        myScene = gv.getScene();
@@ -58,6 +68,23 @@ public class ChooseGameScreen {
 		        mainStage.show();
 		    }
 		});
+	}
+	
+	private Button createDifficultyButton(int difficulty) {
+		Button button;
+		if (difficulty == 0) {
+			button = new Button("Easy");
+			button.setFont(Font.font("Times New Roman", 25));
+		}
+		else if (difficulty == 1) {
+			button = new Button("Medium");
+			button.setFont(Font.font("Times New Roman", 25));
+		}
+		else {
+			button = new Button("Hard");
+			button.setFont(Font.font("Times New Roman", 25));
+		}
+		return button;
 	}
 	
 	public Scene getScene() {

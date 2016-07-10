@@ -20,9 +20,11 @@ public class Grid {
 	private int[][] mySolution;
 	private int[][] myPuzzle;
 	private int[][] mySet;
+	private boolean myNoteMode;
 	
 	public Grid(int dimension, int difficulty) {
 		myDimension = dimension;
+		myNoteMode = false;
 		mySquares = new Square[dimension][dimension];
 		mySelected = new ArrayList<Square>(); 
 		mySolution = generateCorrectGrid();
@@ -92,7 +94,7 @@ public class Grid {
 		        {
 		            @Override
 		            public void handle(MouseEvent t) {
-		                if (!square.isSelected()) {
+		                if (!square.isSelected() && !square.getIsSetInStone()) {
 		                	square.select();
 		                	deselectAll();
 		                	selectNew(square);
@@ -116,7 +118,13 @@ public class Grid {
 						if (!square.getIsSetInStone() && (!number.equals("0"))) {
 							Square picked = (Square) stack.getChildren().get(0);
 							picked.setCurrentNum(numval);
-							stack.getChildren().add(1, textNumber);
+							if (myNoteMode == false) {
+								stack.getChildren().add(1, textNumber);
+							}
+							else if (myNoteMode == true) {
+								square.editNote(number);
+								stack.getChildren().add(1, square.getNotesView());
+							}
 							if (checkForCorrectness()) {
 								System.out.println("WINNER!");
 							}
@@ -138,6 +146,15 @@ public class Grid {
 			}
 		}
 		return true;
+	}
+	
+	public void setWritingMode() {
+		if (myNoteMode == false) {
+			myNoteMode = true;
+		}
+		else {
+			myNoteMode = false;
+		}
 	}
 	
 	public void addHoverEffect(Square square) {
