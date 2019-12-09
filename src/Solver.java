@@ -4,12 +4,12 @@ public class Solver {
 
 	private int myDimension;
 	private int[][][] myCreatorBoard;
-	int[][] mySolution;
-	int[][] mySet;
-	int myNumAutoFilled;
-	int[] myNumUsed;
-	int[] myNotAllowed;
-	boolean isHoleDug;
+	private int[][] mySolution;
+	private int[][] mySet;
+	private int myNumAutoFilled;
+	private int[] myNumUsed;
+	private int[] myNotAllowed;
+	private boolean isHoleDug;
 	
 	public Solver(int dimension) {
 		myDimension = dimension;
@@ -54,7 +54,6 @@ public class Solver {
 		int isSet = mySet[i][j];
 		//end of the board and its a given
 		if ((i == 8) && (j == 8) && (isSet == 1)) {
-			int test = 1;
 			return;
 		}
 		//this square was passed in as a given and cannot be changed
@@ -102,15 +101,11 @@ public class Solver {
 			}
 			mySolution[i][j] = -1;
 			dfsSolve(i, j);
-			return;
 		}
 	}
 
 	private boolean optionsEmpty(int choice) {
-		if (choice == -1) {
-			return true;
-		}
-		return false;
+		return choice == -1;
 	}
 	
 	private int[] updatePossibilities(int i, int j, int[] possibilities) {
@@ -291,10 +286,7 @@ public class Solver {
 	
 	
 	private boolean moreAllowed(int randNum) {
-		if (myNumUsed[randNum-1] < 9) {
-			return true;
-		}
-		return false;
+		return myNumUsed[randNum-1] < 9;
 	}
 
 	private boolean isOpen(int randX, int randY) {
@@ -306,10 +298,7 @@ public class Solver {
 		if (randY < 0 || randY > 8) {
 			return false;
 		}
-		if (mySolution[randX][randY] <= 0) {
-			return true;
-		}
-		return false;
+		return mySolution[randX][randY] <= 0;
 	}
 
 	private int[][][] createAllPossibilities(int dimension) {
@@ -357,10 +346,7 @@ public class Solver {
 			return true;
 		}
 		//bad y val
-		if (j < 0 || j > 8) {
-			return true;
-		}
-		return false;
+		return j < 0 || j > 8;
 	}
 	
 	public boolean holeDug() {

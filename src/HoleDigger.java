@@ -92,35 +92,20 @@ public class HoleDigger {
 	}
 
 	private boolean isOpen(int randX, int randY) {
-		if (!isOutOfBounds(randX, randY)) {
-			if (myPuzzle[randX][randY] == -1) {
-				return true;
-			}
-		}	
-		return false;
+		return !isOutOfBounds(randX, randY) && myPuzzle[randX][randY] == -1;
 	}
 	
 	private boolean isOutOfBounds(int xCoor, int yCoor) {
-		if (xCoor < 0 || xCoor > 8) {
-			return true;
-		}
-		if (yCoor < 0 || yCoor > 8) {
-			return true;
-		}
-		return false;
+		return xCoor < 0 || xCoor > 8 || yCoor < 0 || yCoor > 8;
 	}
 	
 	private boolean isDeletable(int randX, int randY) {
-		if (leavesSufficientInfo(randX, randY) && (myNums > myNumsFinal) && keepsUniqueness(randX, randY)) {
-			return true;
-		}
-		return false;
+		return leavesSufficientInfo(randX, randY) && (myNums > myNumsFinal) && keepsUniqueness(randX, randY);
 	}
 	
 	private boolean keepsUniqueness(int randX, int randY) {
 		Solver solver;
 		int[][] tester, result;
-		int toBeRemoved = myPuzzle[randX][randY];
 		tester = myPuzzle.clone();
 		solver = new Solver(myDimension, tester);
 		solver.substitute(randX, randY, 0);
@@ -134,10 +119,7 @@ public class HoleDigger {
 	}
 
 	private boolean leavesSufficientInfo(int randX, int randY) {
-		if (enoughInRow(randX, randY) || enoughInCol(randX, randY) || enoughInBlock(randX, randY)) {
-			return true;
-		}
-		return false;
+		return enoughInRow(randX, randY) || enoughInCol(randX, randY) || enoughInBlock(randX, randY);
 	}
 	
 	private int[][][] createCountsArray() {
@@ -153,24 +135,15 @@ public class HoleDigger {
 	}
 	
 	private boolean enoughInRow(int i, int j) {
-		if (myRowColCounts[i][j][0] > 0) {
-			return true;
-		}
-		return false;
+		return myRowColCounts[i][j][0] > 0;
 	}
 	
 	private boolean enoughInCol(int i, int j) {
-		if (myRowColCounts[i][j][1] > 0) {
-			return true;
-		}
-		return false;
+		return myRowColCounts[i][j][1] > 0;
 	}
 	
 	private boolean enoughInBlock(int i, int j) {
-		if (myRowColCounts[i][j][2] > 0) {
-			return true;
-		}
-		return false;
+		return myRowColCounts[i][j][2] > 0;
 	}
 	
 	private void addCellsToList(List<int[]> myRandomCells2) {

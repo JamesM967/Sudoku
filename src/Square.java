@@ -128,10 +128,7 @@ public class Square extends Rectangle {
 	}
 	
 	public boolean isCorrect() {
-		if (myCurrentNum == myCorrectNum) {
-			return true;
-		}
-		return false;
+		return myCurrentNum == myCorrectNum;
 	}
 	
 	public int getValue() {
