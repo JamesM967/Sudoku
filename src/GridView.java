@@ -4,14 +4,10 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
@@ -27,27 +23,12 @@ public class GridView {
 	private TilePane myTilepane;
 	private Grid myGrid;
 	
-	/**
-	 * Default setup
-	 */
-	public GridView(int difficulty) {
-		myHeight = 420;
-		myWidth = 420;
-		initialize(difficulty);
-	}
-	
 	public GridView(int height, int width, int difficulty) {
 		myHeight = height;
 		myWidth = width;
 		initialize(difficulty);
 	}
 
-	public GridView(int height, int width, Scene scene, int difficulty) {
-		myHeight = height;
-		myWidth = width;
-		initialize(scene, difficulty);
-	}
-	
     /**
      * initializes the necessary components to create a TabPane with at least one instance of UI
      */
@@ -72,9 +53,8 @@ public class GridView {
 		writingButton.setFont(Font.font("Times New Roman", 22));
 		writingButton.setOnAction(new EventHandler<ActionEvent>() {
 		@Override public void handle(ActionEvent e) {
-		    String currentText = writingButton.getText();
 		    switchWritingButtonName(writingButton);
-			myGrid.setWritingMode();
+			myGrid.flipNoteMode();
 		    }
 		});	
 		titleBox.getChildren().add(writingButton);
@@ -82,18 +62,6 @@ public class GridView {
 		return titleBox;
 	}
 
-	private void initialize (Scene scene, int difficulty) {  
-    	myView = new BorderPane();
-        myGridDimension = 3;
-        myGrid = new Grid(myGridDimension*myGridDimension, difficulty);
-        myTilepane = createGrid(myGridDimension);
-        myGroup = new Group(myTilepane);
-        myView.setCenter(myGroup);
-        scene = new Scene(myView, myWidth, myHeight);
-        myScene = scene;
-    }
-
-    
     private TilePane createGrid(int dim) {
 		TilePane bigGrid = new TilePane();
 		bigGrid.setStyle("-fx-background-color: #000000");

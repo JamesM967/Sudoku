@@ -1,12 +1,10 @@
 import java.util.ArrayList;
-import java.util.Random;
 
 import javafx.event.EventHandler;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -14,37 +12,35 @@ import javafx.scene.text.Text;
 
 public class Grid {
 
-	private int myDimension;
-	private Square[][] mySquares;
-	private ArrayList<Square> mySelected;
-	private int[][] mySolution;
-	private int[][] myPuzzle;
-	private int[][] mySet;
-	private boolean myNoteMode;
+	private int gridDimension;
+	private Square[][] squares;
+	private ArrayList<Square> selectedSquares;
+	private int[][] solution;
+	private int[][] puzzle;
+	private boolean inNoteMode;
 	
 	public Grid(int dimension, int difficulty) {
-		myDimension = dimension;
-		myNoteMode = false;
-		mySquares = new Square[dimension][dimension];
-		mySelected = new ArrayList<Square>(); 
-		mySolution = generateCorrectGrid();
-		myPuzzle = generatePuzzle(difficulty);
-		int test = 1;
+		gridDimension = dimension;
+		inNoteMode = false;
+		squares = new Square[dimension][dimension];
+		selectedSquares = new ArrayList<>();
+		solution = generateCorrectGrid();
+		puzzle = generatePuzzle(difficulty);
 	}
 	
 	private int[][] generateCorrectGrid() {
-		Solver solver = new Solver(myDimension);
+		Solver solver = new Solver(gridDimension);
 		return solver.createValid();
 	}
 	
 	public void writeInStartingNumbers() {
-		for (int i = 0; i < myDimension; i++) {
-			for (int j = 0; j < myDimension; j++) {
-				Square square = mySquares[i][j];
-				square.setCorrectNum(mySolution[i][j]);
-				square.setCurrentNum(myPuzzle[i][j]);
+		for (int i = 0; i < gridDimension; i++) {
+			for (int j = 0; j < gridDimension; j++) {
+				Square square = squares[i][j];
+				square.setCorrectNum(solution[i][j]);
+				square.setCurrentNum(puzzle[i][j]);
 				StackPane stack = (StackPane) square.getParent();
-				int number = myPuzzle[i][j];
+				int number = puzzle[i][j];
 				String strNumber = Integer.toString(number);
 				Text textNumber = new Text(strNumber);
 				textNumber.setFont(Font.font("Times New Roman", 22));
@@ -57,30 +53,28 @@ public class Grid {
 	}
 	
 	private int[][] generatePuzzle(int difficulty) {
-		int[][] puzzle = new int[myDimension][myDimension];
-		HoleDigger digger = new HoleDigger(myDimension, difficulty);
-		puzzle = digger.dig(mySolution);
-		return puzzle;
+		HoleDigger digger = new HoleDigger(gridDimension, difficulty);
+		return digger.dig(solution);
 	}
 	
 	public void add(int bigRow, int bigCol, int smallRow, int smallCol, Square square) {
-		mySquares[myDimension/3*bigRow + smallRow][myDimension/3*bigCol + smallCol] = square;
+		squares[gridDimension /3*bigRow + smallRow][gridDimension /3*bigCol + smallCol] = square;
 	}
 	
 	private void deselectAll() {
-		for (Square sq : mySelected) {
+		for (Square sq : selectedSquares) {
 			sq.deselect();
 		}
-		mySelected.clear();
+		selectedSquares.clear();
 	}
 	
 	private void selectNew(Square square) {
-		mySelected.add(square);
-		for (int i = 0; i < myDimension; i++) {
-			for (int j = 0; j < myDimension; j++) {
-				Square next = mySquares[i][j];
+		selectedSquares.add(square);
+		for (int i = 0; i < gridDimension; i++) {
+			for (int j = 0; j < gridDimension; j++) {
+				Square next = squares[i][j];
 				if (square.getValue() == next.getValue() && next.getValue() != 0) {
-					mySelected.add(next);
+					selectedSquares.add(next);
 					next.select();
 				}
 			}
@@ -118,10 +112,9 @@ public class Grid {
 						if (!square.getIsSetInStone() && (!number.equals("0"))) {
 							Square picked = (Square) stack.getChildren().get(0);
 							picked.setCurrentNum(numval);
-							if (myNoteMode == false) {
+							if (!inNoteMode) {
 								stack.getChildren().add(1, textNumber);
-							}
-							else if (myNoteMode == true) {
+							} else {
 								square.editNote(number);
 								stack.getChildren().add(1, square.getNotesView());
 							}
@@ -130,16 +123,16 @@ public class Grid {
 							}
 						}
 					} catch (NumberFormatException e) {
-						int test = 1;
+						throw e;
 					}
 				}
 			});
 	}
 	
 	private boolean checkForCorrectness() {
-		for (int i = 0; i < myDimension; i++) {
-			for (int j = 0; j < myDimension; j++) {
-				Square square = mySquares[i][j];
+		for (int i = 0; i < gridDimension; i++) {
+			for (int j = 0; j < gridDimension; j++) {
+				Square square = squares[i][j];
 				if (!square.isCorrect()) {
 					return false;
 				}
@@ -148,13 +141,8 @@ public class Grid {
 		return true;
 	}
 	
-	public void setWritingMode() {
-		if (myNoteMode == false) {
-			myNoteMode = true;
-		}
-		else {
-			myNoteMode = false;
-		}
+	public void flipNoteMode() {
+		inNoteMode = !inNoteMode;
 	}
 	
 	public void addHoverEffect(Square square) {
@@ -177,10 +165,10 @@ public class Grid {
 	}
 	
 	public void findSet() {
-		for (int i = 0; i < myDimension; i++) {
-			for (int j = 0; j < myDimension; j++) {
-				if (myPuzzle[i][j] != -1) {
-					Square square = mySquares[i][j];
+		for (int i = 0; i < gridDimension; i++) {
+			for (int j = 0; j < gridDimension; j++) {
+				if (puzzle[i][j] != -1) {
+					Square square = squares[i][j];
 					square.setInStone();
 				}
 			}
