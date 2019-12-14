@@ -1,3 +1,5 @@
+package view;
+
 public class Note {
 
     private static final int IS_NOTED = 1;

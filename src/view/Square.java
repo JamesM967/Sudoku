@@ -1,3 +1,5 @@
+package view;
+
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.layout.ColumnConstraints;
@@ -8,6 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import view.Note;
 
 public class Square extends Rectangle {
 

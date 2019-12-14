@@ -1,3 +1,5 @@
+package view;
+
 import java.util.ArrayList;
 
 import javafx.event.EventHandler;
@@ -8,6 +10,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import solver.HoleDigger;
+import solver.Solver;
 
 
 public class Grid {
