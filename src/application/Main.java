@@ -6,12 +6,15 @@ import view.ChooseGameScreen;
 
 public class Main extends Application {
 
+	private static final int DEFAULT_GAME_HEIGHT = 600;
+	private static final int DEFAULT_GAME_WIDTH = 600;
+
 	@Override
-	public void start(Stage s) {
-		ChooseGameScreen display = new ChooseGameScreen(600, 600, s);
-		s.setScene(display.getScene());
-		s.setTitle("Suduku!!!!");
-		s.show();
+	public void start(Stage stage) {
+		ChooseGameScreen display = new ChooseGameScreen(DEFAULT_GAME_HEIGHT, DEFAULT_GAME_WIDTH, stage);
+		stage.setScene(display.getScene());
+		stage.setTitle("Suduku!!!!");
+		stage.show();
 	}
 
 	public static void main(String[] args) {

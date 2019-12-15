@@ -15,10 +15,15 @@ import javafx.scene.text.Text;
 
 
 public class GridView {
-	
+
+	private static final int DEFAULT_SUB_GRID_DIMENSION = 3;
+	private static final int DEFAULT_POWER_TO_RAISE_SUB_GRID_DIM = 2;
+	private static final String NOTE_MODE_TEXT = "Pencil";
+	private static final String NOT_NOTE_MODE_TEXT = "Pen";
+
 	private int myHeight;
 	private int myWidth;
-	private int myGridDimension;
+	private int subGridDimension;
 	private Scene myScene;
 	private Group myGroup;
 	private BorderPane myView;
@@ -38,9 +43,9 @@ public class GridView {
         myView = new BorderPane();
         VBox titleBox = makeTitle();
         myView.setTop(titleBox);
-        myGridDimension = 3;
-        myGrid = new Grid(myGridDimension*myGridDimension, difficulty);
-        myTilepane = createGrid(myGridDimension);
+        subGridDimension = DEFAULT_SUB_GRID_DIMENSION;
+        myGrid = new Grid((int) Math.pow(subGridDimension, DEFAULT_POWER_TO_RAISE_SUB_GRID_DIM), difficulty);
+        myTilepane = createGrid(subGridDimension);
         myGroup = new Group(myTilepane);
         myView.setCenter(myGroup);
         myScene = new Scene(myView, myWidth, myHeight);
@@ -51,7 +56,7 @@ public class GridView {
 		Text title = new Text("SUDOKU");
 		title.setFont(Font.font("Times New Roman", 50));
 		titleBox.getChildren().add(title);
-		Button writingButton = new Button("Pencil");
+		Button writingButton = new Button(NOTE_MODE_TEXT);
 		writingButton.setFont(Font.font("Times New Roman", 22));
 		writingButton.setOnAction(new EventHandler<ActionEvent>() {
 		@Override public void handle(ActionEvent e) {
@@ -80,7 +85,7 @@ public class GridView {
 			    miniGrid.setPrefTileHeight(42);
 				for (int m = 0; m < dim; m++) {
 					for (int n = 0; n < dim; n++) {
-						Square square = new Square(42, myGridDimension*myGridDimension);
+						Square square = new Square(42, (int) Math.pow(subGridDimension, DEFAULT_POWER_TO_RAISE_SUB_GRID_DIM));
 						StackPane bottomStack = new StackPane();
 						StackPane clickStack = new StackPane();
 						clickStack.setOpacity(0);
@@ -103,17 +108,17 @@ public class GridView {
     
     private void switchWritingButtonName(Button writingButton) {
     	String currentText = writingButton.getText();
-    	if (currentText == "Pen") {
-	    	writingButton.setText("Pencil");
+    	if (currentText.equals(NOT_NOTE_MODE_TEXT)) {
+	    	writingButton.setText(NOTE_MODE_TEXT);
 	    	writingButton.setFont(Font.font("Times New Roman", 22));
 	    }
-	    else if (currentText == "Pencil") {
-	    	writingButton.setText("Pen");
+	    else if (currentText.equals(NOTE_MODE_TEXT)) {
+	    	writingButton.setText(NOT_NOTE_MODE_TEXT);
 	    	writingButton.setFont(Font.font("Times New Roman", 22));
 	    }
     }
     
-	public Scene getScene() {
+	Scene getScene() {
     	return myScene;
     }
 }

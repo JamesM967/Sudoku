@@ -14,7 +14,7 @@ import solver.HoleDigger;
 import solver.Solver;
 
 
-public class Grid {
+class Grid {
 
 	private int gridDimension;
 	private Square[][] squares;
@@ -23,7 +23,7 @@ public class Grid {
 	private int[][] puzzle;
 	private boolean inNoteMode;
 	
-	public Grid(int dimension, int difficulty) {
+	Grid(int dimension, int difficulty) {
 		gridDimension = dimension;
 		inNoteMode = false;
 		squares = new Square[dimension][dimension];
@@ -37,7 +37,7 @@ public class Grid {
 		return solver.createValid();
 	}
 	
-	public void writeInStartingNumbers() {
+	void writeInStartingNumbers() {
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
 				Square square = squares[i][j];
@@ -48,7 +48,7 @@ public class Grid {
 				String strNumber = Integer.toString(number);
 				Text textNumber = new Text(strNumber);
 				textNumber.setFont(Font.font("Times New Roman", 22));
-				if (square.getIsSetInStone()) {
+				if (square.isSetInStone()) {
 					textNumber.setFont(Font.font("Times New Roman", FontWeight.BOLD, 22));
 					stack.getChildren().add(textNumber);
 				}
@@ -61,7 +61,7 @@ public class Grid {
 		return digger.dig(solution);
 	}
 	
-	public void add(int bigRow, int bigCol, int smallRow, int smallCol, Square square) {
+	void add(int bigRow, int bigCol, int smallRow, int smallCol, Square square) {
 		squares[gridDimension /3*bigRow + smallRow][gridDimension /3*bigCol + smallCol] = square;
 	}
 	
@@ -77,7 +77,7 @@ public class Grid {
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
 				Square next = squares[i][j];
-				if (square.getValue() == next.getValue() && next.getValue() != 0) {
+				if (square.getCurrentNum() == next.getCurrentNum() && next.getCurrentNum() != 0) {
 					selectedSquares.add(next);
 					next.select();
 				}
@@ -92,7 +92,7 @@ public class Grid {
 		        {
 		            @Override
 		            public void handle(MouseEvent t) {
-		                if (!square.isSelected() && !square.getIsSetInStone()) {
+		                if (!square.isSelected() && !square.isSetInStone()) {
 		                	square.select();
 		                	deselectAll();
 		                	selectNew(square);
@@ -113,7 +113,7 @@ public class Grid {
 						int numval = Integer.parseInt(number);
 						Text textNumber = new Text(number);
 						textNumber.setFont(Font.font("Times New Roman", 22));
-						if (!square.getIsSetInStone() && (!number.equals("0"))) {
+						if (!square.isSetInStone() && (!number.equals("0"))) {
 							Square picked = (Square) stack.getChildren().get(0);
 							picked.setCurrentNum(numval);
 							if (!inNoteMode) {
@@ -145,11 +145,11 @@ public class Grid {
 		return true;
 	}
 	
-	public void flipNoteMode() {
+	void flipNoteMode() {
 		inNoteMode = !inNoteMode;
 	}
 	
-	public void addHoverEffect(Square square) {
+	void addHoverEffect(Square square) {
 		InnerShadow is = new InnerShadow();
 		StackPane stack = (StackPane) square.getParent();
 		StackPane clickStack = (StackPane) stack.getChildren().get(2);
@@ -168,7 +168,7 @@ public class Grid {
 		});
 	}
 	
-	public void findSet() {
+	void findSet() {
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
 				if (puzzle[i][j] != -1) {

@@ -11,22 +11,21 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import view.GridView;
 
 
 public class ChooseGameScreen {
 
-	private int myHeight;
-	private int myWidth;
+	private int screenHeight;
+	private int screenWidth;
 	private BorderPane myBP;
 	private Group myGroup;
 	private Scene myScene;
 	private Stage mainStage;
 	
-	public ChooseGameScreen(int height, int width, Stage stage) {
+	public ChooseGameScreen(int screenHeight, int screenWidth, Stage stage) {
 		mainStage = stage;
-		myHeight = height;
-		myWidth = width;
+		this.screenHeight = screenHeight;
+		this.screenWidth = screenWidth;
 		initialize();
 	}
 	
@@ -41,7 +40,7 @@ public class ChooseGameScreen {
 		VBox buttonBox = createButtonBox();
 		myGroup.getChildren().add(buttonBox);
 		myBP.setCenter(myGroup);
-		myScene = new Scene(myBP, myWidth, myHeight);
+		myScene = new Scene(myBP, screenWidth, screenHeight);
 	}
 	
 	private VBox createButtonBox() {
@@ -64,7 +63,7 @@ public class ChooseGameScreen {
 		buttonBox.getChildren().add(difficultyButton);
 		difficultyButton.setOnAction(new EventHandler<ActionEvent>() {
 		    @Override public void handle(ActionEvent e) {
-		    	GridView gv = new GridView(myHeight, myWidth, difficulty);
+		    	GridView gv = new GridView(screenHeight, screenWidth, difficulty);
 		        myScene = gv.getScene();
 		        mainStage.setScene(myScene);
 		        mainStage.show();

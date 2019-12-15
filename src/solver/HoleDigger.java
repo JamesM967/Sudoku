@@ -1,7 +1,5 @@
 package solver;
 
-import solver.Solver;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,18 +21,13 @@ public class HoleDigger {
 	}
 	
 	public int[][] dig(int[][] solution) {
-		myPuzzle = new int[myDimension][myDimension];
-		for (int i = 0; i < myDimension; i++) {
-			for (int j = 0; j < myDimension; j++) {
-				myPuzzle[i][j] = solution[i][j];
-			}
-		}
+		myPuzzle = solution.clone();
 		randomDelete();
 		return myPuzzle;
 	}
 
 	private void randomDelete() {
-		myRandomCells = new ArrayList<int[]>();
+		myRandomCells = new ArrayList<>();
 		addCellsToList(myRandomCells);
 		int size = myDimension*myDimension;
 		int[] rand;
@@ -104,7 +97,7 @@ public class HoleDigger {
 	}
 	
 	private boolean isDeletable(int randX, int randY) {
-		return leavesSufficientInfo(randX, randY) && (myNums > myNumsFinal) && keepsUniqueness(randX, randY);
+		return holeLeavesSufficientInfo(randX, randY) && (myNums > myNumsFinal) && keepsUniqueness(randX, randY);
 	}
 	
 	private boolean keepsUniqueness(int randX, int randY) {
@@ -112,7 +105,7 @@ public class HoleDigger {
 		int[][] tester, result;
 		tester = myPuzzle.clone();
 		solver = new Solver(myDimension, tester);
-		solver.substitute(randX, randY, 0);
+		solver.substitute(randX, randY);
 		result = solver.createValid();
 		if (!solver.holeDug()) {
 			myPuzzle = tester;
@@ -122,7 +115,7 @@ public class HoleDigger {
 		return true;
 	}
 
-	private boolean leavesSufficientInfo(int randX, int randY) {
+	private boolean holeLeavesSufficientInfo(int randX, int randY) {
 		return enoughInRow(randX, randY) || enoughInCol(randX, randY) || enoughInBlock(randX, randY);
 	}
 	

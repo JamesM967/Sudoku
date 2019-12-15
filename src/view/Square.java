@@ -10,20 +10,16 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import view.Note;
 
 public class Square extends Rectangle {
 
 	private Note myNotes;
-	private int myValue;
-	private int mySize;
 	private int noteSpacing;
 	private boolean isSelected;
-	private boolean isSetInStone;
+	private boolean isUneditable;
 	private GridPane myNoteGrid;
-	private Rectangle myImage;
-	private int myCorrectNum;
-	private int myCurrentNum;
+	private int correctNum;
+	private int currentNum;
 	
 	public Square(int size, int noteDimension) {
 		initialize(size, noteDimension);
@@ -31,11 +27,10 @@ public class Square extends Rectangle {
 	
 	private void initialize(int squareSize, int noteDimension) {
 		myNotes = new Note(noteDimension);
-		mySize = squareSize;
 		isSelected = false;
-		isSetInStone = false;
+		isUneditable = false;
 		createSquare(squareSize);
-		initializeNoteGrid(noteDimension/3);
+		initializeNoteGrid(noteDimension / 3);
 	}
 	
 	private void initializeNoteGrid(int dimension) {
@@ -59,10 +54,6 @@ public class Square extends Rectangle {
 		}
 	}
 	
-	public void setValue(int val) {
-		myValue = val;
-	}
-	
 	private void createSquare(int size) {
         this.setHeight(size);
         this.setWidth(size);
@@ -81,21 +72,21 @@ public class Square extends Rectangle {
 		clickStack.requestFocus();
 	}
 	
-	public void deselect() {
+	void deselect() {
 		this.setFill(Color.WHITE); //change color back to white
 		isSelected = false;
 	}
 	
-	public void editNote(String number) {
+	void editNote(String number) {
 		int numval = Integer.parseInt(number);
-		int row = numval/3;
-		int col = numval%3-1;
+		int row = numval / 3;
+		int col = numval % 3 - 1;
 		if (col < 0) {
 			row--;
 			col = 2;
 		}
 		if (myNotes.hasNote(numval)) {
-			removeNote(number, row, col);
+			removeNote(row, col);
 			myNotes.removeNumber(numval);
 		}
 		else {
@@ -110,43 +101,39 @@ public class Square extends Rectangle {
 		myNoteGrid.add(textNumber, col, row);
 	}
 	
-	private void removeNote(String number, int row, int col) {
+	private void removeNote(int row, int col) {
 		myNoteGrid.add(new Text(""), col, row);
 	}
-	
-	public Rectangle getImage() {
-		return myImage;
-	}
-	
-	public boolean isSelected() {
+
+	boolean isSelected() {
 		return isSelected;
 	}
 	
-	public void setCorrectNum(int val) {
-		myCorrectNum = val;
+	void setCorrectNum(int val) {
+		correctNum = val;
+	}
+
+	int getCurrentNum() {
+		return currentNum;
+	}
+
+	void setCurrentNum(int val) {
+		currentNum = val;
 	}
 	
-	public void setCurrentNum(int val) {
-		myCurrentNum = val;
+	boolean isCorrect() {
+		return currentNum == correctNum;
 	}
-	
-	public boolean isCorrect() {
-		return myCurrentNum == myCorrectNum;
-	}
-	
-	public int getValue() {
-		return myValue;
-	}
-	
-	public GridPane getNotesView() {
+
+	GridPane getNotesView() {
 		return myNoteGrid;
 	}
 	
-	public void setInStone() {
-		isSetInStone = true;
+	void setInStone() {
+		isUneditable = true;
 	}
 	
-	public boolean getIsSetInStone() {
-		return isSetInStone;
+	boolean isSetInStone() {
+		return isUneditable;
 	}
 }
