@@ -14,7 +14,7 @@ public class Solver {
 	private int[][][] allRemainingPossibilitiesBoard;
 	private int[][] solution;
 	private boolean[][] squaresSetInStone;
-	private int[] myNumUsed;
+	private int[] numberCountsOnGrid;
 	private Set<Integer> disqualifiedValues = new HashSet<>();
 	private boolean isHoleDug;
 	
@@ -23,8 +23,8 @@ public class Solver {
 		allRemainingPossibilitiesBoard = createAllPossibilities(dimension);
 		solution = new int[dimension][dimension];
 		squaresSetInStone = new boolean[dimension][dimension];
-		myNumUsed = new int[dimension];
-		countNums();
+		numberCountsOnGrid = new int[dimension];
+		countNumbersOnGrid();
 		randomAutoFill(DEFAULT_NUM_SQUARES_TO_AUTOFILL);
 		fillInBlanksOfSolution();
 	}
@@ -34,8 +34,8 @@ public class Solver {
 		allRemainingPossibilitiesBoard = createAllPossibilities(dimension);
 		solution = partialSolution;
 		squaresSetInStone = new boolean[dimension][dimension];
-		myNumUsed = new int[dimension];
-		countNums();
+		numberCountsOnGrid = new int[dimension];
+		countNumbersOnGrid();
 		enterAll();
 		fillInBlanksOfSolution();
 		isHoleDug = false;
@@ -51,12 +51,14 @@ public class Solver {
 			isHoleDug = true;
 			return;
 		}
-		int[] possibilities = fillPossibilities(i, j);
-		possibilities = updatePossibilities(i, j, possibilities);
-		int choice = selectPossibility(possibilities);
+
+		int[] currentPossibilities = getCurrentPossibilitiesForSquare(i, j);
+		int[] possibilities = updatePossibilities(i, j, currentPossibilities);
+		int chosenNumber = selectPossibleNumber(possibilities);
 		boolean gridIsSetForCurrentPosition = squaresSetInStone[i][j];
-		//end of the board and its a given
-		if (i == gridDimension - 1 && j == gridDimension - 1 && gridIsSetForCurrentPosition) {
+
+		//end of the board and it's set
+		if (atLastSquareOfGrid(i, j) && gridIsSetForCurrentPosition) {
 			return;
 		}
 		//this square was passed in as a given and cannot be changed
@@ -67,10 +69,10 @@ public class Solver {
 			return;
 		}
 		//there is a yet untested number for this square
-		if (!optionsEmpty(choice)) {
-			solution[i][j] = choice;
-			checkOffUsed(i, j, choice);
-			if (i == gridDimension - 1 && j == gridDimension - 1) {
+		if (!optionsEmpty(chosenNumber)) {
+			solution[i][j] = chosenNumber;
+			checkOffUsed(i, j, chosenNumber);
+			if (atLastSquareOfGrid(i, j)) {
 				return;
 			}
 			i = incrementIWhenJAtEnd(i, j);
@@ -79,7 +81,7 @@ public class Solver {
 			return;
 		}
 		//there are no valid paths to take
-		if (optionsEmpty(choice)) {
+		if (optionsEmpty(chosenNumber)) {
 			allRemainingPossibilitiesBoard[i][j] = createNewPossibilities();
 			j = backupJ(j);
 			i = backupIWhenJAtEnd(i, j);
@@ -104,6 +106,10 @@ public class Solver {
 			solution[i][j] = EMPTY_SQUARE;
 			dfsSolve(i, j);
 		}
+	}
+
+	private boolean atLastSquareOfGrid(int i, int j) {
+		return i == gridDimension - 1 && j == gridDimension - 1;
 	}
 
 	private boolean optionsEmpty(int choice) {
@@ -178,7 +184,7 @@ public class Solver {
 		return i;
 	}
 
-	private int selectPossibility(int[] possibilities) {
+	private int selectPossibleNumber(int[] possibilities) {
 		int pCount = 0;
 		for (int k = 0; k < gridDimension; k++) {
 			if (possibilities[k] != -1) {
@@ -220,23 +226,17 @@ public class Solver {
 		}
 	}
 	
-	private int[] fillPossibilities(int i, int j) {
-		int[] possibilities = new int[gridDimension];
-		int val;
-		for (int k = 0; k < gridDimension; k++) {
-			val = allRemainingPossibilitiesBoard[i][j][k];
-			possibilities[k] = val;
-		}
-		return possibilities;
+	private int[] getCurrentPossibilitiesForSquare(int i, int j) {
+		return allRemainingPossibilitiesBoard[i][j].clone();
 	}
 	
-	private void countNums() {
+	private void countNumbersOnGrid() {
 		int currentNum;
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
 				currentNum = solution[i][j];
-				if (currentNum >= 1) {
-					myNumUsed[currentNum - 1]++;
+				if (squareValueIsValid(currentNum)) {
+					numberCountsOnGrid[currentNum - 1]++;
 				}
 			}
 		}
@@ -251,9 +251,9 @@ public class Solver {
 			while (randNum < 1 || !moreAllowed(randNum) || !isOpen(randX, randY)) {
 				randX = generator.nextInt(gridDimension);
 				randY = generator.nextInt(gridDimension);
-				int[] possibilities = fillPossibilities(randX, randY);
-				possibilities = updatePossibilities(randX, randY, possibilities);
-				randNum = selectPossibility(possibilities);
+				int[] currentPossibilities = getCurrentPossibilitiesForSquare(randX, randY);
+				int[] possibilities = updatePossibilities(randX, randY, currentPossibilities);
+				randNum = selectPossibleNumber(possibilities);
 			}
 			enter(randNum, randX, randY);
 		}
@@ -279,15 +279,17 @@ public class Solver {
 				allRemainingPossibilitiesBoard[randX][randY][i] = -1;
 			}
 		}
-		myNumUsed[num-1]++;
+		numberCountsOnGrid[num-1]++;
 		solution[randX][randY] = num;
 		squaresSetInStone[randX][randY] = true;
 	}
 
-	
+	private boolean squareValueIsValid(int value) {
+		return value >= SMALLEST_POSSIBLE_SQUARE_VALUE && value <= gridDimension;
+	}
 	
 	private boolean moreAllowed(int randNum) {
-		return myNumUsed[randNum-1] < gridDimension;
+		return numberCountsOnGrid[randNum-1] < gridDimension;
 	}
 
 	private boolean isOpen(int randX, int randY) {
