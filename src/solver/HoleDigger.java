@@ -106,7 +106,7 @@ public class HoleDigger {
 		tester = myPuzzle.clone();
 		solver = new Solver(myDimension, tester);
 		solver.substitute(randX, randY);
-		result = solver.createValid();
+		result = solver.createValidSolution();
 		if (!solver.holeDug()) {
 			myPuzzle = tester;
 			return false;

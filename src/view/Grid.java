@@ -34,7 +34,7 @@ class Grid {
 	
 	private int[][] generateCorrectGrid() {
 		Solver solver = new Solver(gridDimension);
-		return solver.createValid();
+		return solver.createValidSolution();
 	}
 	
 	void writeInStartingNumbers() {

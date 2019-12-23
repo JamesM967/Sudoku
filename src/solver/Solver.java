@@ -1,8 +1,12 @@
 package solver;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Solver {
 
@@ -11,19 +15,17 @@ public class Solver {
 	private static final int SMALLEST_POSSIBLE_SQUARE_VALUE = 1;
 
 	private final int gridDimension;
-	private int[][][] allRemainingPossibilitiesBoard;
+	private Map<Integer, Map<Integer, Set<Integer>>> allRemainingPossibilitiesBoard = new HashMap<>();
 	private int[][] solution;
-	private boolean[][] squaresSetInStone;
-	private int[] numberCountsOnGrid;
+	private Map<Integer, Set<Integer>> squaresSetInStone = new HashMap<>();
+	private int[] countsOfAllNumbersOnGrid;
 	private Set<Integer> disqualifiedValues = new HashSet<>();
 	private boolean isHoleDug;
 	
 	public Solver(int dimension) {
 		this.gridDimension = dimension;
-		allRemainingPossibilitiesBoard = createAllPossibilities(dimension);
 		solution = new int[dimension][dimension];
-		squaresSetInStone = new boolean[dimension][dimension];
-		numberCountsOnGrid = new int[dimension];
+		countsOfAllNumbersOnGrid = new int[dimension];
 		countNumbersOnGrid();
 		randomAutoFill(DEFAULT_NUM_SQUARES_TO_AUTOFILL);
 		fillInBlanksOfSolution();
@@ -31,17 +33,15 @@ public class Solver {
 	
 	public Solver(int dimension, int[][] partialSolution) {
 		this.gridDimension = dimension;
-		allRemainingPossibilitiesBoard = createAllPossibilities(dimension);
 		solution = partialSolution;
-		squaresSetInStone = new boolean[dimension][dimension];
-		numberCountsOnGrid = new int[dimension];
+		countsOfAllNumbersOnGrid = new int[dimension];
 		countNumbersOnGrid();
 		enterAll();
 		fillInBlanksOfSolution();
 		isHoleDug = false;
 	}
 
-	public int[][] createValid() {
+	public int[][] createValidSolution() {
 		dfsSolve(0, 0);
 		return solution;
 	}
@@ -52,26 +52,27 @@ public class Solver {
 			return;
 		}
 
-		int[] currentPossibilities = getCurrentPossibilitiesForSquare(i, j);
-		int[] possibilities = updatePossibilities(i, j, currentPossibilities);
+		Set<Integer> nonUpdatedPossibilities = getCurrentPossibilitiesForSquare(i, j);
+		Set<Integer> possibilities = updatePossibilities(i, j, nonUpdatedPossibilities);
 		int chosenNumber = selectPossibleNumber(possibilities);
-		boolean gridIsSetForCurrentPosition = squaresSetInStone[i][j];
 
-		//end of the board and it's set
-		if (atLastSquareOfGrid(i, j) && gridIsSetForCurrentPosition) {
+		//end of the board and it can't be changed
+		if (atLastSquareOfGrid(i, j) && isSetInStone(i, j)) {
 			return;
 		}
+
 		//this square was passed in as a given and cannot be changed
-		if (gridIsSetForCurrentPosition) {
+		if (isSetInStone(i, j)) {
 			i = incrementIWhenJAtEnd(i, j);
 			j = incrementJIndex(j);
 			dfsSolve(i,j);
 			return;
 		}
+
 		//there is a yet untested number for this square
 		if (!optionsEmpty(chosenNumber)) {
 			solution[i][j] = chosenNumber;
-			checkOffUsed(i, j, chosenNumber);
+			removeOptionAsPossibility(i, j, chosenNumber);
 			if (atLastSquareOfGrid(i, j)) {
 				return;
 			}
@@ -80,28 +81,27 @@ public class Solver {
 			dfsSolve(i, j);
 			return;
 		}
+
 		//there are no valid paths to take
 		if (optionsEmpty(chosenNumber)) {
-			allRemainingPossibilitiesBoard[i][j] = createNewPossibilities();
+			createNewPossibilities(i, j);
 			j = backupJ(j);
 			i = backupIWhenJAtEnd(i, j);
 			if (isOutOfBounds(i) || isOutOfBounds(j)) {
 				isHoleDug = true;
 				return;
 			}
-			gridIsSetForCurrentPosition = squaresSetInStone[i][j];
-			while (gridIsSetForCurrentPosition) {
+			while (isSetInStone(i, j)) {
 				j = backupJ(j);
 				i = backupIWhenJAtEnd(i, j);
 				if (isOutOfBounds(i) || isOutOfBounds(j)) {
 					isHoleDug = true;
 					return;
 				}
-				gridIsSetForCurrentPosition = squaresSetInStone[i][j];
 			}
 			int number = solution[i][j];
 			if (solution[i][j] != EMPTY_SQUARE) {
-				checkOffUsed(i, j, number);
+				removeOptionAsPossibility(i, j, number);
 			}
 			solution[i][j] = EMPTY_SQUARE;
 			dfsSolve(i, j);
@@ -116,42 +116,48 @@ public class Solver {
 		return choice == -1;
 	}
 	
-	private int[] updatePossibilities(int i, int j, int[] possibilities) {
-		int number;
+	private Set<Integer> updatePossibilities(int i, int j, Set<Integer> possibilities) {
+		//Check all numbers in the square's row
+		removePossibilitiesForRow(i, possibilities);
+
+		//Check all numbers in the square's column
+		removePossibilitiesForColumn(j, possibilities);
+
+		//Check all numbers in the square's block
+		removePossibilitiesForBlock(i, j, possibilities);
+
+		//Remove any disqualified values
 		for (int k = 0; k < gridDimension; k++) {
-			number = solution[i][k];
-			if (number > 0) {
-				possibilities[number - 1] = -1;
+			if (disqualifiedValues.contains(k)) {
+				possibilities.remove(k);
 			}
 		}
-		for (int k = 0; k < gridDimension; k++) {
-			number = solution[k][j];
-			if (number > 0) {
-				possibilities[number - 1] = -1;
-			}
+
+		return possibilities;
+	}
+
+	private void removePossibilitiesForRow(int i, Set<Integer> possibilities) {
+		for (int j = 0; j < gridDimension; j++) {
+			possibilities.remove(solution[i][j]);
 		}
+	}
+
+	private void removePossibilitiesForColumn(int j, Set<Integer> possibilities) {
+		for (int i = 0; i < gridDimension; i++) {
+			possibilities.remove(solution[i][j]);
+		}
+	}
+
+	private void removePossibilitiesForBlock(int i, int j, Set<Integer> possibilities) {
 		int iblock = i / 3;
 		int jblock = j / 3;
 		int istart = iblock * 3;
 		int jstart = jblock * 3;
 		for (int l = istart; l < istart + 3; l++) {
 			for (int m = jstart; m < jstart + 3; m++) {
-				number = solution[l][m];
-				if (number > 0) {
-					possibilities[number - 1] = -1;
-				}
-			}
- 		}
-		for (int k = 0; k < gridDimension; k++) {
-			if (disqualifiedValues.contains(k)) {
-				possibilities[k] = -1;
+				possibilities.remove(solution[l][m]);
 			}
 		}
-		return possibilities;
-	}
-
-	private void checkOffUsed(int i, int j, int choice) {
-		allRemainingPossibilitiesBoard[i][j][choice-1] = -1;
 	}
 	
 	private int backupIWhenJAtEnd(int i, int j) {
@@ -184,38 +190,42 @@ public class Solver {
 		return i;
 	}
 
-	private int selectPossibleNumber(int[] possibilities) {
-		int pCount = 0;
-		for (int k = 0; k < gridDimension; k++) {
-			if (possibilities[k] != -1) {
-				pCount++;
-			}
-		}
-		int choice = -1;
+	private int selectPossibleNumber(Set<Integer> possibilities) {
 		Random generator = new Random();
-		if (pCount > 0) {
-			int rand  = generator.nextInt(pCount);
-			for (int k = 0; k< gridDimension; k++) {
-				if (possibilities[k] != -1 && rand == 0) {
-					choice = possibilities[k];
-					break;
-				}
-				if (possibilities[k] != -1) {
-					rand--;
-				}
-			}
-		}
-		return choice;
+		int random  = generator.nextInt(possibilities.size());
+		Integer[] choiceArray = possibilities.toArray(new Integer[0]);
+		return choiceArray[random];
 	}
 	
-	private int[] createNewPossibilities() {
-		int[] startingPossibilities = new int[gridDimension];
-		for (int i = 0; i < gridDimension; i++) {
-			startingPossibilities[i] = i + 1;
-		}
-		return startingPossibilities;
+	private void createNewPossibilities(int i, int j) {
+		Map<Integer, Set<Integer>> iPossibilities =
+				allRemainingPossibilitiesBoard.computeIfAbsent(i, k -> new HashMap<>());
+		iPossibilities.compute(j, (k, v) -> createPossibleNumbersForASquare());
 	}
-	
+
+	private Set<Integer> getCurrentPossibilitiesForSquare(int i, int j) {
+		allRemainingPossibilitiesBoard.computeIfAbsent(i, k -> new HashMap<>());
+		return allRemainingPossibilitiesBoard.get(i).computeIfAbsent(j, k -> createPossibleNumbersForASquare());
+	}
+
+	private void removeOptionAsPossibility(int i, int j, int choice) {
+		Set<Integer> currentPossibilities = getCurrentPossibilitiesForSquare(i , j);
+		currentPossibilities.remove(choice);
+	}
+
+	private void clearOutPossibilitiesForSquareExceptChosen(int num, int i, int j) {
+		Set<Integer> remainingPossibilities = getCurrentPossibilitiesForSquare(i, j);
+		remainingPossibilities.clear();
+		remainingPossibilities.add(num);
+	}
+
+	private Set<Integer> createPossibleNumbersForASquare() {
+		return IntStream
+				.rangeClosed(SMALLEST_POSSIBLE_SQUARE_VALUE, gridDimension)
+				.boxed()
+				.collect(Collectors.toSet());
+	}
+
 	private void fillInBlanksOfSolution() {
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
@@ -226,17 +236,13 @@ public class Solver {
 		}
 	}
 	
-	private int[] getCurrentPossibilitiesForSquare(int i, int j) {
-		return allRemainingPossibilitiesBoard[i][j].clone();
-	}
-	
 	private void countNumbersOnGrid() {
 		int currentNum;
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
 				currentNum = solution[i][j];
 				if (squareValueIsValid(currentNum)) {
-					numberCountsOnGrid[currentNum - 1]++;
+					countsOfAllNumbersOnGrid[currentNum - 1]++;
 				}
 			}
 		}
@@ -246,16 +252,16 @@ public class Solver {
 		Random generator = new Random();
 		for (int i = 0; i < numAutoFilled; i++) {
 			int randNum = -1;
-			int randX = -1;
-			int randY = -1;
-			while (randNum < 1 || !moreAllowed(randNum) || !isOpen(randX, randY)) {
-				randX = generator.nextInt(gridDimension);
-				randY = generator.nextInt(gridDimension);
-				int[] currentPossibilities = getCurrentPossibilitiesForSquare(randX, randY);
-				int[] possibilities = updatePossibilities(randX, randY, currentPossibilities);
+			int randI = -1;
+			int randJ = -1;
+			while (randNum < 1 || !moreAllowed(randNum) || !isOpen(randI, randJ)) {
+				randI = generator.nextInt(gridDimension);
+				randJ = generator.nextInt(gridDimension);
+				Set<Integer> currentPossibilities = getCurrentPossibilitiesForSquare(randI, randJ);
+				Set<Integer> possibilities = updatePossibilities(randI, randJ, currentPossibilities);
 				randNum = selectPossibleNumber(possibilities);
 			}
-			enter(randNum, randX, randY);
+			enter(randNum, randI, randJ);
 		}
 		
 	}
@@ -267,21 +273,17 @@ public class Solver {
 				number = solution[i][j];
 				if (number >= SMALLEST_POSSIBLE_SQUARE_VALUE) {
 					enter(number, i, j);
-					squaresSetInStone[i][j] = true;
+					setInStone(i, j);
 				}
 			}
 		}
 	}
 	
-	private void enter(int num, int randX, int randY) {
-		for (int i = 0; i < gridDimension; i++) {
-			if (i + 1 != num) {
-				allRemainingPossibilitiesBoard[randX][randY][i] = -1;
-			}
-		}
-		numberCountsOnGrid[num-1]++;
-		solution[randX][randY] = num;
-		squaresSetInStone[randX][randY] = true;
+	private void enter(int num, int i, int j) {
+		clearOutPossibilitiesForSquareExceptChosen(num, i , j);
+		countsOfAllNumbersOnGrid[num-1]++;
+		solution[i][j] = num;
+		setInStone(i, j);
 	}
 
 	private boolean squareValueIsValid(int value) {
@@ -289,49 +291,48 @@ public class Solver {
 	}
 	
 	private boolean moreAllowed(int randNum) {
-		return numberCountsOnGrid[randNum-1] < gridDimension;
+		return countsOfAllNumbersOnGrid[randNum-1] < gridDimension;
 	}
 
-	private boolean isOpen(int randX, int randY) {
+	private boolean isOpen(int randI, int randJ) {
 		//bad x val
-		if (randX < 0 || randX >= gridDimension) {
+		if (randI < 0 || randI >= gridDimension) {
 			return false;
 		}
 		//bad y val
-		if (randY < 0 || randY >= gridDimension) {
+		if (randJ < 0 || randJ >= gridDimension) {
 			return false;
 		}
-		return solution[randX][randY] <= 0;
+		return solution[randI][randJ] <= 0;
 	}
 
-	private int[][][] createAllPossibilities(int dimension) {
-		int[][][] possibilities = new int[dimension][dimension][dimension];
-		for (int i = 0; i < dimension; i++) {
-			for (int j = 0; j < dimension; j++) {
-				for (int k = 1; k <= dimension; k++) {
-					possibilities[i][j][k] = k;
+	void substitute(int randI, int randJ) {
+		disqualifiedValues.clear();
+		int disqualifiedValue = solution[randI][randJ];
+		solution[randI][randJ] = EMPTY_SQUARE;
+		disqualifiedValues.add(disqualifiedValue);
+		markNumbersSetInStone();
+	}
+	
+	private void markNumbersSetInStone() {
+		for (int i = 0; i < gridDimension; i++) {
+			for (int j = 0; j < gridDimension; j++) {
+				if (solution[i][j] > 0) {
+					setInStone(i, j);
 				}
 			}
 		}
-		return possibilities;
 	}
 
-	void substitute(int randX, int randY) {
-		disqualifiedValues.clear();
-		int disqualifiedValue = solution[randX][randY];
-		solution[randX][randY] = EMPTY_SQUARE;
-		disqualifiedValues.add(disqualifiedValue);
-		setInStone();
+	private void setInStone(int i, int j) {
+		Set<Integer> currentlySetInStone = squaresSetInStone.computeIfAbsent(i, k -> new HashSet<>());
+		currentlySetInStone.add(j);
 	}
-	
-	private void setInStone() {
-		for (int i = 0; i < gridDimension; i++) {
-			for (int j = 0; j < gridDimension; j++) {
-				squaresSetInStone[i][j] = solution[i][j] > 0;
-			}
-		}
+
+	private boolean isSetInStone(int i, int j) {
+		return squaresSetInStone.getOrDefault(i, new HashSet<>()).contains(j);
 	}
-	
+
 	private boolean isOutOfBounds(int index) {
 		return index < 0 || index >= gridDimension;
 	}
