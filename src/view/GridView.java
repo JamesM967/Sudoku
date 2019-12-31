@@ -1,5 +1,6 @@
 package view;
 
+import config.Difficulty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -30,7 +31,7 @@ public class GridView {
 	private TilePane myTilepane;
 	private Grid myGrid;
 	
-	public GridView(int height, int width, int difficulty) {
+	public GridView(int height, int width, Difficulty difficulty) {
 		myHeight = height;
 		myWidth = width;
 		initialize(difficulty);
@@ -39,7 +40,7 @@ public class GridView {
     /**
      * initializes the necessary components to create a TabPane with at least one instance of UI
      */
-    private void initialize (int difficulty) {
+    private void initialize (Difficulty difficulty) {
         myView = new BorderPane();
         VBox titleBox = makeTitle();
         myView.setTop(titleBox);

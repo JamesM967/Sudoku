@@ -192,6 +192,9 @@ public class Solver {
 
 	private int selectPossibleNumber(Set<Integer> possibilities) {
 		Random generator = new Random();
+		if (possibilities.isEmpty()) {
+			return -1;
+		}
 		int random  = generator.nextInt(possibilities.size());
 		Integer[] choiceArray = possibilities.toArray(new Integer[0]);
 		return choiceArray[random];
@@ -317,7 +320,7 @@ public class Solver {
 	private void markNumbersSetInStone() {
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
-				if (solution[i][j] > 0) {
+				if (squareValueIsValid(solution[i][j])) {
 					setInStone(i, j);
 				}
 			}

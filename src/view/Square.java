@@ -62,7 +62,8 @@ public class Square extends Rectangle {
     }
 	
 	public void select() {
-		this.setFill(Color.web("#ffe580")); //light yellowish color
+		//highlights square in yellow
+		this.setFill(Color.web("#ffe580"));
 		isSelected = true;
 		StackPane stack = (StackPane) this.getParent();
 		if (stack.getChildren().size() == 2) {
@@ -73,7 +74,8 @@ public class Square extends Rectangle {
 	}
 	
 	void deselect() {
-		this.setFill(Color.WHITE); //change color back to white
+		//return square color to white
+		this.setFill(Color.WHITE);
 		isSelected = false;
 	}
 	

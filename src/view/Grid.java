@@ -2,6 +2,7 @@ package view;
 
 import java.util.ArrayList;
 
+import config.Difficulty;
 import javafx.event.EventHandler;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.input.KeyEvent;
@@ -23,7 +24,7 @@ class Grid {
 	private int[][] puzzle;
 	private boolean inNoteMode;
 	
-	Grid(int dimension, int difficulty) {
+	Grid(int dimension, Difficulty difficulty) {
 		gridDimension = dimension;
 		inNoteMode = false;
 		squares = new Square[dimension][dimension];
@@ -56,8 +57,8 @@ class Grid {
 		}
 	}
 	
-	private int[][] generatePuzzle(int difficulty) {
-		HoleDigger digger = new HoleDigger(gridDimension, difficulty);
+	private int[][] generatePuzzle(Difficulty difficulty) {
+		HoleDigger digger = new HoleDigger(gridDimension, difficulty.getNumSquaresLeftOpen());
 		return digger.dig(solution);
 	}
 	

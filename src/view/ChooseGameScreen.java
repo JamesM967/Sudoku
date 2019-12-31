@@ -1,5 +1,6 @@
 package view;
 
+import config.Difficulty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -46,9 +47,9 @@ public class ChooseGameScreen {
 	private VBox createButtonBox() {
 		VBox buttonBox = new VBox(12);
 		buttonBox.setAlignment(Pos.CENTER);
-		addDifficultyButton(buttonBox, 0);
-		addDifficultyButton(buttonBox, 1);
-		addDifficultyButton(buttonBox, 2);
+		addDifficultyButton(buttonBox, Difficulty.EASY);
+		addDifficultyButton(buttonBox, Difficulty.MEDIUM);
+		addDifficultyButton(buttonBox, Difficulty.HARD);
 		return buttonBox;
 	}
 
@@ -58,8 +59,8 @@ public class ChooseGameScreen {
 		return title;
 	}
 
-	private void addDifficultyButton(VBox buttonBox, int difficulty) {
-		Button difficultyButton = createDifficultyButton(difficulty);
+	private void addDifficultyButton(VBox buttonBox, Difficulty difficulty) {
+		Button difficultyButton = createDifficultyButton(difficulty.getName());
 		buttonBox.getChildren().add(difficultyButton);
 		difficultyButton.setOnAction(new EventHandler<ActionEvent>() {
 		    @Override public void handle(ActionEvent e) {
@@ -71,20 +72,10 @@ public class ChooseGameScreen {
 		});
 	}
 	
-	private Button createDifficultyButton(int difficulty) {
+	private Button createDifficultyButton(String difficultyName) {
 		Button button;
-		if (difficulty == 0) {
-			button = new Button("Easy");
-			button.setFont(Font.font("Times New Roman", 25));
-		}
-		else if (difficulty == 1) {
-			button = new Button("Medium");
-			button.setFont(Font.font("Times New Roman", 25));
-		}
-		else {
-			button = new Button("Hard");
-			button.setFont(Font.font("Times New Roman", 25));
-		}
+		button = new Button(difficultyName);
+		button.setFont(Font.font("Times New Roman", 25));
 		return button;
 	}
 	
