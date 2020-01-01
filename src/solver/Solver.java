@@ -47,6 +47,7 @@ public class Solver {
 	}
 
 	private void dfsSolve(int i, int j) {
+		//off the board
 		if (isOutOfBounds(i) || isOutOfBounds(j)) {
 			isHoleDug = true;
 			return;

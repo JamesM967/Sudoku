@@ -6,152 +6,138 @@ import java.util.Random;
 
 public class HoleDigger {
 
-	private int myNums;
-	private int myNumsFinal;
-	private int myDimension;
-	private int[][] myPuzzle;
-	private int[][][] myRowColCounts;
-	private List<int[]> myRandomCells;
-	
+	private int numberOfFilledSquaresLeft;
+	private int finalGridCount;
+	private int gridDimension;
+	private int subGridDimension;
+	private int[] rowCounts;
+	private int[] columnCounts;
+	private int[][] blockCounts;
+
 	public HoleDigger(int dimension, int numHoles) {
-		myNums = 81;
-		myNumsFinal = myNums - numHoles;
-		myDimension = dimension;
-		myRowColCounts = createCountsArray();
+		numberOfFilledSquaresLeft = dimension * dimension;
+		finalGridCount = numberOfFilledSquaresLeft - numHoles;
+		gridDimension = dimension;
+		subGridDimension = (int) Math.sqrt(dimension);
+		rowCounts = initializeStartingCounts();
+		columnCounts = initializeStartingCounts();
+		blockCounts = initializeStartingBlockCounts();
 	}
 	
-	public int[][] dig(int[][] solution) {
-		myPuzzle = solution.clone();
-		randomDelete();
-		return myPuzzle;
+	public int[][] digHolesInSolution(int[][] solution) {
+		int[][] puzzle = solution.clone();
+		return emptyRandomSquaresToMatchDifficulty(puzzle);
 	}
 
-	private void randomDelete() {
-		myRandomCells = new ArrayList<>();
-		addCellsToList(myRandomCells);
-		int size = myDimension*myDimension;
-		int[] rand;
-		int randX, randY;
-		for (int i = 0; i < myDimension*myDimension; i++) {
-			rand = pickRandomCell(size);
-			randX = rand[0];
-			randY = rand[1];
-			delete(randX, randY);
-			size--;
-		}	
-	}
+	private int[][] emptyRandomSquaresToMatchDifficulty(int[][] puzzle) {
+		List<int[]> uncheckedSquares = initializeListOfAllSquares();
 
-	private int[] pickRandomCell(int limit) {
-		Random generator = new Random();
-		int rand = generator.nextInt(limit);
-		int[] cell = myRandomCells.get(rand);
-		myRandomCells.remove(rand);
-		return cell;
-	}
-	
-	private void delete(int rowCoor, int colCoor) {
-		if (!isDeletable(rowCoor, colCoor)) {
-			return;
-		}
-		myPuzzle[rowCoor][colCoor] = -1;
-		updateCounts(rowCoor, colCoor);
-		myNums--;
-	}
-
-	private void updateCounts(int rowCoor, int colCoor) {
-		updateRowCounts(rowCoor);
-		updateColCounts(colCoor);
-		updateBlockCounts(rowCoor, colCoor);
-	}
-
-	private void updateRowCounts(int rowCoor) {
-		for (int k = 0; k < myDimension; k++) {
-			myRowColCounts[rowCoor][k][0]--;
-		}	
-	}
-	
-	private void updateColCounts(int colCoor) {
-		for (int k = 0; k < myDimension; k++) {
-			myRowColCounts[k][colCoor][1]--;
-		}		
-	}
-	
-	private void updateBlockCounts(int rowCoor, int colCoor) {
-		int rowblock = rowCoor/3;
-		int colblock = colCoor/3;
-		int rowstart = rowblock*3;
-		int colstart = colblock*3;
-		for (int l = rowstart; l < rowstart+3; l++) {
-			for (int m = colstart; m < colstart+3; m++) {
-				myRowColCounts[l][m][2]--;
-			}
- 		}
-	}
-
-	private boolean isOpen(int randX, int randY) {
-		return !isOutOfBounds(randX, randY) && myPuzzle[randX][randY] == -1;
-	}
-	
-	private boolean isOutOfBounds(int xCoor, int yCoor) {
-		return xCoor < 0 || xCoor > 8 || yCoor < 0 || yCoor > 8;
-	}
-	
-	private boolean isDeletable(int randX, int randY) {
-		return holeLeavesSufficientInfo(randX, randY) && (myNums > myNumsFinal) && keepsUniqueness(randX, randY);
-	}
-	
-	private boolean keepsUniqueness(int randX, int randY) {
-		Solver solver;
-		int[][] tester, result;
-		tester = myPuzzle.clone();
-		solver = new Solver(myDimension, tester);
-		solver.substitute(randX, randY);
-		result = solver.createValidSolution();
-		if (!solver.holeDug()) {
-			myPuzzle = tester;
-			return false;
-		}
-		myPuzzle = result;
-		return true;
-	}
-
-	private boolean holeLeavesSufficientInfo(int randX, int randY) {
-		return enoughInRow(randX, randY) || enoughInCol(randX, randY) || enoughInBlock(randX, randY);
-	}
-	
-	private int[][][] createCountsArray() {
-		int[][][] counts = new int[myDimension][myDimension][3];
-		for (int i = 0; i < myDimension; i++) {
-			for (int j = 0; j < myDimension; j++) {
-				counts[i][j][0] = 9;
-				counts[i][j][1] = 9;
-				counts[i][j][2] = 9;
+		for (int i = 0; i < gridDimension * gridDimension; i++) {
+			int[] randomSquareCooridinates = pickRandomCell(uncheckedSquares);
+			int randI = randomSquareCooridinates[0];
+			int randJ = randomSquareCooridinates[1];
+			if (squareIsEmptyable(puzzle, randI, randJ)) {
+				emptySquare(puzzle, randI, randJ);
 			}
 		}
-		return counts;
+		return puzzle;
 	}
-	
-	private boolean enoughInRow(int i, int j) {
-		return myRowColCounts[i][j][0] > 0;
-	}
-	
-	private boolean enoughInCol(int i, int j) {
-		return myRowColCounts[i][j][1] > 0;
-	}
-	
-	private boolean enoughInBlock(int i, int j) {
-		return myRowColCounts[i][j][2] > 0;
-	}
-	
-	private void addCellsToList(List<int[]> myRandomCells2) {
-		for (int i = 0; i < myDimension; i++) {
-			for (int j = 0; j < myDimension; j++) {
+
+	private List<int[]> initializeListOfAllSquares() {
+		List<int[]> allSquares = new ArrayList<>();
+
+		for (int i = 0; i < gridDimension; i++) {
+			for (int j = 0; j < gridDimension; j++) {
 				int[] cellTemp = new int[2];
 				cellTemp[0] = i;
 				cellTemp[1] = j;
-				myRandomCells2.add(cellTemp);
+				allSquares.add(cellTemp);
 			}
 		}
+		return allSquares;
+	}
+
+	private int[] pickRandomCell(List<int[]> uncheckedSquares) {
+		Random generator = new Random();
+		int rand = generator.nextInt(uncheckedSquares.size());
+		int[] cell = uncheckedSquares.get(rand);
+		uncheckedSquares.remove(rand);
+		return cell;
+	}
+	
+	private void emptySquare(int[][] puzzle, int rowCoordinate, int colCoordinate) {
+		puzzle[rowCoordinate][colCoordinate] = -1;
+		decrementGridCounts(rowCoordinate, colCoordinate);
+		numberOfFilledSquaresLeft--;
+	}
+
+	private boolean squareIsEmptyable(int[][] puzzle, int randX, int randY) {
+		return holeLeavesSufficientInfo(randX, randY)
+				&& numberOfFilledSquaresLeft > finalGridCount
+				&& keepsUniquenessOfSolution(puzzle, randX, randY);
+	}
+
+	private boolean keepsUniquenessOfSolution(int[][] puzzle, int randX, int randY) {
+		Solver solver;
+		int[][] solutionTesterPuzzle = puzzle.clone();
+		solver = new Solver(gridDimension, solutionTesterPuzzle);
+		solver.substitute(randX, randY);
+		solver.createValidSolution();
+		return solver.holeDug();
+	}
+
+	private boolean holeLeavesSufficientInfo(int randI, int randJ) {
+		return enoughInRow(randI) || enoughInCol(randJ) || enoughInBlock(randI, randJ);
+	}
+
+	private boolean enoughInRow(int i) {
+		return rowCounts[i] > 0;
+	}
+
+	private boolean enoughInCol(int j) {
+		return columnCounts[j] > 0;
+	}
+
+	private boolean enoughInBlock(int i, int j) {
+		return blockCounts[i][j] > 0;
+	}
+
+	private void decrementGridCounts(int rowCoor, int colCoor) {
+		decrementRowCount(rowCoor);
+		decrementColumnCounts(colCoor);
+		decrementBlockCounts(rowCoor, colCoor);
+	}
+
+	private void decrementRowCount(int rowCoordinate) {
+		rowCounts[rowCoordinate]--;
+	}
+	
+	private void decrementColumnCounts(int colCoordinate) {
+		columnCounts[colCoordinate]--;
+	}
+	
+	private void decrementBlockCounts(int rowCoordinate, int colCoordinate) {
+		int rowBlock = rowCoordinate / subGridDimension;
+		int columnBlock = colCoordinate / subGridDimension;
+		blockCounts[rowBlock][columnBlock]--;
+	}
+
+	private int[] initializeStartingCounts() {
+		int[] counts = new int[gridDimension];
+		for (int i = 0; i < gridDimension; i++) {
+			counts[i] = gridDimension;
+		}
+		return counts;
+	}
+
+	private int[][] initializeStartingBlockCounts() {
+		int[][] counts = new int[subGridDimension][subGridDimension];
+		for (int i = 0; i < subGridDimension; i++) {
+			for (int j = 0; j < subGridDimension; j++) {
+				counts[i][j] = gridDimension;
+			}
+		}
+		return counts;
 	}
 
 }

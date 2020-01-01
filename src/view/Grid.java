@@ -59,7 +59,7 @@ class Grid {
 	
 	private int[][] generatePuzzle(Difficulty difficulty) {
 		HoleDigger digger = new HoleDigger(gridDimension, difficulty.getNumSquaresLeftOpen());
-		return digger.dig(solution);
+		return digger.digHolesInSolution(solution);
 	}
 	
 	void add(int bigRow, int bigCol, int smallRow, int smallCol, Square square) {
