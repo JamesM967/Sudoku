@@ -1,5 +1,7 @@
 package solver;
 
+import view.Grid;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -7,9 +9,9 @@ import java.util.Random;
 public class HoleDigger {
 
 	private int numberOfFilledSquaresLeft;
-	private int finalGridCount;
-	private int gridDimension;
-	private int subGridDimension;
+	private final int finalGridCount;
+	private final int gridDimension;
+	private final int subGridDimension;
 	private int[] rowCounts;
 	private int[] columnCounts;
 	private int[][] blockCounts;
@@ -66,7 +68,7 @@ public class HoleDigger {
 	}
 	
 	private void emptySquare(int[][] puzzle, int rowCoordinate, int colCoordinate) {
-		puzzle[rowCoordinate][colCoordinate] = -1;
+		puzzle[rowCoordinate][colCoordinate] = Grid.EMPTY_SQUARE;
 		decrementGridCounts(rowCoordinate, colCoordinate);
 		numberOfFilledSquaresLeft--;
 	}
@@ -80,7 +82,7 @@ public class HoleDigger {
 	private boolean keepsUniquenessOfSolution(int[][] puzzle, int rowCoordinate, int colCoordinate) {
 		Solver solver;
 		int[][] solutionTesterPuzzle = deepCopySudokuGrid(puzzle);
-		solutionTesterPuzzle[rowCoordinate][colCoordinate] = -1;
+		solutionTesterPuzzle[rowCoordinate][colCoordinate] = Grid.EMPTY_SQUARE;
 		solver = new Solver(gridDimension, solutionTesterPuzzle);
 		solver.substitute(rowCoordinate, colCoordinate);
 		solver.createValidSolution();

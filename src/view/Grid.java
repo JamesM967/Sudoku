@@ -3,9 +3,7 @@ package view;
 import java.util.ArrayList;
 
 import config.Difficulty;
-import javafx.event.EventHandler;
 import javafx.scene.effect.InnerShadow;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
@@ -15,9 +13,11 @@ import solver.HoleDigger;
 import solver.Solver;
 
 
-class Grid {
+public class Grid {
 
-	private int gridDimension;
+	public static final int EMPTY_SQUARE = -1;
+
+	private final int gridDimension;
 	private Square[][] squares;
 	private ArrayList<Square> selectedSquares;
 	private int[][] solution;
@@ -63,7 +63,7 @@ class Grid {
 	}
 	
 	void add(int bigRow, int bigCol, int smallRow, int smallCol, Square square) {
-		squares[gridDimension /3*bigRow + smallRow][gridDimension /3*bigCol + smallCol] = square;
+		squares[gridDimension / 3 * bigRow + smallRow][gridDimension / 3 * bigCol + smallCol] = square;
 	}
 	
 	private void deselectAll() {
@@ -86,52 +86,47 @@ class Grid {
 		}
 	}
 	
-	public void makeSquareClickable(Square square) {
+	void makeSquareClickable(Square square) {
 		StackPane stack = (StackPane) square.getParent();
 		StackPane clickStack = (StackPane) stack.getChildren().get(2);
-		clickStack.setOnMouseClicked(new EventHandler<MouseEvent>()
-		        {
-		            @Override
-		            public void handle(MouseEvent t) {
-		                if (!square.isSelected() && !square.isSetInStone()) {
-		                	square.select();
-		                	deselectAll();
-		                	selectNew(square);
-		                }
-		                else 
-		                	square.deselect();
-		            }
-		        });
-		clickStack.setOnKeyPressed(new EventHandler<KeyEvent>() 
-			{
-				public void handle(KeyEvent ke) {
-					int stacksize = stack.getChildren().size();
-					String number = ke.getText();
-					if (stacksize > 2) {
-						stack.getChildren().remove(1);
+		clickStack.setOnMouseClicked(e ->
+		{
+			if (!square.isSelected() && !square.isSetInStone()) {
+				square.select();
+				deselectAll();
+				selectNew(square);
+			}
+			else {
+				square.deselect();
+			}
+		});
+		clickStack.setOnKeyPressed(ke -> {
+			int stacksize = stack.getChildren().size();
+			String number = ke.getText();
+			if (stacksize > 2) {
+				stack.getChildren().remove(1);
+			}
+			try {
+				int numval = Integer.parseInt(number);
+				Text textNumber = new Text(number);
+				textNumber.setFont(Font.font("Times New Roman", 22));
+				if (!square.isSetInStone() && (!number.equals("0"))) {
+					Square picked = (Square) stack.getChildren().get(0);
+					picked.setCurrentNum(numval);
+					if (!inNoteMode) {
+						stack.getChildren().add(1, textNumber);
+					} else {
+						square.editNote(number);
+						stack.getChildren().add(1, square.getNotesView());
 					}
-					try {
-						int numval = Integer.parseInt(number);
-						Text textNumber = new Text(number);
-						textNumber.setFont(Font.font("Times New Roman", 22));
-						if (!square.isSetInStone() && (!number.equals("0"))) {
-							Square picked = (Square) stack.getChildren().get(0);
-							picked.setCurrentNum(numval);
-							if (!inNoteMode) {
-								stack.getChildren().add(1, textNumber);
-							} else {
-								square.editNote(number);
-								stack.getChildren().add(1, square.getNotesView());
-							}
-							if (checkForCorrectness()) {
-								System.out.println("WINNER!");
-							}
-						}
-					} catch (NumberFormatException e) {
-						throw e;
+					if (checkForCorrectness()) {
+						System.out.println("WINNER!");
 					}
 				}
-			});
+			} catch (NumberFormatException e) {
+				throw e;
+			}
+		});
 	}
 	
 	private boolean checkForCorrectness() {
@@ -154,25 +149,18 @@ class Grid {
 		InnerShadow is = new InnerShadow();
 		StackPane stack = (StackPane) square.getParent();
 		StackPane clickStack = (StackPane) stack.getChildren().get(2);
-		clickStack.addEventHandler(MouseEvent.MOUSE_ENTERED, 
-		    new EventHandler<MouseEvent>() {
-		        @Override public void handle(MouseEvent e) {
-		            square.setEffect(is);
-		        }
-		});
+
+		//Hover effect added to square
+		clickStack.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> square.setEffect(is));
+
 		//Removing the shadow when the mouse cursor is off
-		clickStack.addEventHandler(MouseEvent.MOUSE_EXITED, 
-		    new EventHandler<MouseEvent>() {
-		        @Override public void handle(MouseEvent e) {
-		            square.setEffect(null);
-		        }
-		});
+		clickStack.addEventHandler(MouseEvent.MOUSE_EXITED, e -> square.setEffect(null));
 	}
 	
 	void findSet() {
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
-				if (puzzle[i][j] != -1) {
+				if (puzzle[i][j] != EMPTY_SQUARE) {
 					Square square = squares[i][j];
 					square.setInStone();
 				}

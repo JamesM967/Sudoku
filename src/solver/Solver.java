@@ -1,5 +1,7 @@
 package solver;
 
+import view.Grid;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,7 +13,6 @@ import java.util.stream.IntStream;
 public class Solver {
 
 	private static final int DEFAULT_NUM_SQUARES_TO_AUTOFILL = 11;
-	private static final int EMPTY_SQUARE = -1;
 	private static final int SMALLEST_POSSIBLE_SQUARE_VALUE = 1;
 
 	private final int gridDimension;
@@ -101,10 +102,10 @@ public class Solver {
 				}
 			}
 			int number = solution[i][j];
-			if (solution[i][j] != EMPTY_SQUARE) {
+			if (solution[i][j] != Grid.EMPTY_SQUARE) {
 				removeOptionAsPossibility(i, j, number);
 			}
-			solution[i][j] = EMPTY_SQUARE;
+			solution[i][j] = Grid.EMPTY_SQUARE;
 			dfsSolve(i, j);
 		}
 	}
@@ -234,7 +235,7 @@ public class Solver {
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
 				if (solution[i][j] < SMALLEST_POSSIBLE_SQUARE_VALUE) {
-					solution[i][j] = EMPTY_SQUARE;
+					solution[i][j] = Grid.EMPTY_SQUARE;
 				}
 			}
 		}
@@ -313,7 +314,7 @@ public class Solver {
 	void substitute(int randI, int randJ) {
 		disqualifiedValues.clear();
 		int disqualifiedValue = solution[randI][randJ];
-		solution[randI][randJ] = EMPTY_SQUARE;
+		solution[randI][randJ] = Grid.EMPTY_SQUARE;
 		disqualifiedValues.add(disqualifiedValue);
 		markNumbersSetInStone();
 	}
