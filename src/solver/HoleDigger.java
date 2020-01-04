@@ -25,14 +25,14 @@ public class HoleDigger {
 	}
 	
 	public int[][] digHolesInSolution(int[][] solution) {
-		int[][] puzzle = solution.clone();
+		int[][] puzzle = deepCopySudokuGrid(solution);
 		return emptyRandomSquaresToMatchDifficulty(puzzle);
 	}
 
 	private int[][] emptyRandomSquaresToMatchDifficulty(int[][] puzzle) {
 		List<int[]> uncheckedSquares = initializeListOfAllSquares();
 
-		for (int i = 0; i < gridDimension * gridDimension; i++) {
+		while(!uncheckedSquares.isEmpty()) {
 			int[] randomSquareCooridinates = pickRandomCell(uncheckedSquares);
 			int randI = randomSquareCooridinates[0];
 			int randJ = randomSquareCooridinates[1];
@@ -77,13 +77,14 @@ public class HoleDigger {
 				&& keepsUniquenessOfSolution(puzzle, randX, randY);
 	}
 
-	private boolean keepsUniquenessOfSolution(int[][] puzzle, int randX, int randY) {
+	private boolean keepsUniquenessOfSolution(int[][] puzzle, int rowCoordinate, int colCoordinate) {
 		Solver solver;
-		int[][] solutionTesterPuzzle = puzzle.clone();
+		int[][] solutionTesterPuzzle = deepCopySudokuGrid(puzzle);
+		solutionTesterPuzzle[rowCoordinate][colCoordinate] = -1;
 		solver = new Solver(gridDimension, solutionTesterPuzzle);
-		solver.substitute(randX, randY);
+		solver.substitute(rowCoordinate, colCoordinate);
 		solver.createValidSolution();
-		return solver.holeDug();
+		return !solver.holeDug();
 	}
 
 	private boolean holeLeavesSufficientInfo(int randI, int randJ) {
@@ -102,10 +103,10 @@ public class HoleDigger {
 		return blockCounts[i][j] > 0;
 	}
 
-	private void decrementGridCounts(int rowCoor, int colCoor) {
-		decrementRowCount(rowCoor);
-		decrementColumnCounts(colCoor);
-		decrementBlockCounts(rowCoor, colCoor);
+	private void decrementGridCounts(int rowCoordinate, int colCoordinate) {
+		decrementRowCount(rowCoordinate);
+		decrementColumnCounts(colCoordinate);
+		decrementBlockCounts(rowCoordinate, colCoordinate);
 	}
 
 	private void decrementRowCount(int rowCoordinate) {
@@ -138,6 +139,16 @@ public class HoleDigger {
 			}
 		}
 		return counts;
+	}
+
+	private int[][] deepCopySudokuGrid(int[][] inputGrid) {
+		int[][] outputGrid = new int[gridDimension][gridDimension];
+		for (int i = 0; i < gridDimension; i++) {
+			for (int j = 0; j < gridDimension; j++) {
+				outputGrid[i][j] = inputGrid[i][j];
+			}
+		}
+		return outputGrid;
 	}
 
 }
