@@ -35,7 +35,8 @@ public class Grid {
 	
 	private int[][] generateCorrectGrid() {
 		Solver solver = new Solver(gridDimension);
-		return solver.createValidSolution();
+		int[][] emptyStartingGrid = new int[gridDimension][gridDimension];
+		return solver.createValidSolution(emptyStartingGrid);
 	}
 	
 	void writeInStartingNumbers() {
@@ -78,7 +79,7 @@ public class Grid {
 		for (int i = 0; i < gridDimension; i++) {
 			for (int j = 0; j < gridDimension; j++) {
 				Square next = squares[i][j];
-				if (square.getCurrentNum() == next.getCurrentNum() && next.getCurrentNum() != 0) {
+				if (square.getCurrentNum() == next.getCurrentNum() && next.getCurrentNum() > 0) {
 					selectedSquares.add(next);
 					next.select();
 				}
@@ -98,6 +99,7 @@ public class Grid {
 			}
 			else {
 				square.deselect();
+				deselectAll();
 			}
 		});
 		clickStack.setOnKeyPressed(ke -> {
@@ -124,7 +126,7 @@ public class Grid {
 					}
 				}
 			} catch (NumberFormatException e) {
-				throw e;
+				//ignore key pressed event
 			}
 		});
 	}

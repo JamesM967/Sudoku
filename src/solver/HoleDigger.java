@@ -5,6 +5,8 @@ import view.Grid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class HoleDigger {
 
@@ -15,6 +17,7 @@ public class HoleDigger {
 	private int[] rowCounts;
 	private int[] columnCounts;
 	private int[][] blockCounts;
+	private final Solver solver;
 
 	public HoleDigger(int dimension, int numHoles) {
 		numberOfFilledSquaresLeft = dimension * dimension;
@@ -24,6 +27,7 @@ public class HoleDigger {
 		rowCounts = initializeStartingCounts();
 		columnCounts = initializeStartingCounts();
 		blockCounts = initializeStartingBlockCounts();
+		solver = new Solver(gridDimension);
 	}
 	
 	public int[][] digHolesInSolution(int[][] solution) {
@@ -80,13 +84,11 @@ public class HoleDigger {
 	}
 
 	private boolean keepsUniquenessOfSolution(int[][] puzzle, int rowCoordinate, int colCoordinate) {
-		Solver solver;
 		int[][] solutionTesterPuzzle = deepCopySudokuGrid(puzzle);
+		int numberAtCoordinates = puzzle[rowCoordinate][colCoordinate];
 		solutionTesterPuzzle[rowCoordinate][colCoordinate] = Grid.EMPTY_SQUARE;
-		solver = new Solver(gridDimension, solutionTesterPuzzle);
-		solver.substitute(rowCoordinate, colCoordinate);
-		solver.createValidSolution();
-		return !solver.holeDug();
+		solver.createValidSolution(solutionTesterPuzzle, IntStream.of(numberAtCoordinates).boxed().collect(Collectors.toSet()));
+		return solver.holeDug();
 	}
 
 	private boolean holeLeavesSufficientInfo(int randI, int randJ) {
